@@ -1,14 +1,6 @@
 import BLOCKS from "./blocks.js";
-
-//DOM
-const playground = document.querySelector(".playground > ul");
-const gameoverText = document.querySelector(".game-text");
-const scoreDisplay = document.querySelector(".score");
-const restartButton = document.querySelector(".game-text > button");
-//SETTING
-const GAME_ROWS = 20;
-const GAME_COLS = 10;
-
+import { playground, gameoverText, scoreDisplay, restartButton } from "./dom.js";
+import { GAME_ROWS, GAME_COLS } from "./setting.js";
 //variables
 let score = 0; // 점수를 저장하는 변수
 let duration = 500; // 블럭이 떨어지는 시간
