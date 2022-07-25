@@ -1,4 +1,6 @@
 const GAME_ROWS = 20;
 const GAME_COLS = 10;
+const NEXT_BLOCK_ROWS = 5;
+const NEXT_BLOCK_COLS = 5;
 
-export { GAME_ROWS, GAME_COLS };
+export { GAME_ROWS, GAME_COLS, NEXT_BLOCK_ROWS, NEXT_BLOCK_COLS };

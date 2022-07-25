@@ -8,15 +8,21 @@
     <title>테트리스</title>
 </head>
 <body>
-    <div class="wrapper">
+    <div class="container">
         <div class="game-text">
             <span>게임종료</span>
             <button>다시시작</button>
         </div>
         <div class="score">0</div>
         <div class="playground">
-            <ul></ul>  <!--ul,li태그 아니고 table을 사용해도 무방-->
+            <div class="wrapper">
+                <ul></ul> 
+            </div>
+            <div class="nextblock">
+                <ul></ul>
+            </div>
         </div>
+        
     </div>
 
     <script src="js/app.js" type="module"></script>

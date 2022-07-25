@@ -1,6 +1,6 @@
 import BLOCKS from "./blocks.js";
-import { playground, gameoverText, scoreDisplay, restartButton } from "./dom.js";
-import { GAME_ROWS, GAME_COLS } from "./setting.js";
+import { playground, gameoverText, scoreDisplay, restartButton, nextBlockGround } from "./dom.js";
+import { GAME_ROWS, GAME_COLS, NEXT_BLOCK_ROWS, NEXT_BLOCK_COLS } from "./setting.js";
 
 //variables
 function Tetris() {
@@ -9,6 +9,7 @@ function Tetris() {
   this.downInterval; // 블록을 자동으로 내려오게 할 때 사용하는 setInterval을 할당하는 변수
   this.tempMovingItem; // 블록 랜더링 시 사용할 객체 변수
   this.point = 10;
+  this.nextBlock;
 
   // 오류발생시(블록이 격자를 넘어갈 시) 되돌릴 직전 블록 상태를 저장하는 객체
   this.movingItem = {
@@ -19,22 +20,32 @@ function Tetris() {
   };
 
   // 게임을 시작하면 테트리스 격자를 그리고, 블록을 생성한다
+
   this.init = () => {
-    for (let i = 0; i < GAME_ROWS; i++) prependNewLine();
+    createPlayGround(playground);
+    createNextBlockGround(nextBlockGround);
     initEventListener();
-    generateNewBlock();
+    generateNewBlock(selectBlock());
   };
 
-  // 화면에 격자를 그리는 함수
-  const prependNewLine = () => {
+  const createPlayGround = (playground) => {
+    for (let i = 0; i < GAME_ROWS; i++) prependNewLine(playground, GAME_COLS);
+  };
+
+  const createNextBlockGround = (nextBlockGround) => {
+    for (let i = 0; i < NEXT_BLOCK_ROWS; i++) prependNewLine(nextBlockGround, NEXT_BLOCK_COLS);
+  };
+
+  // 화면에 격자 한 줄을 그리는 함수
+  const prependNewLine = (ground, column) => {
     const li = document.createElement("li");
     const ul = document.createElement("ul");
-    for (let j = 0; j < GAME_COLS; j++) {
+    for (let j = 0; j < column; j++) {
       const matrix = document.createElement("li");
       ul.prepend(matrix);
     }
     li.prepend(ul);
-    playground.prepend(li);
+    ground.prepend(li);
   };
 
   // 블록 랜더링 함수
@@ -109,25 +120,25 @@ function Tetris() {
       let matched = true;
       // 한줄의 모든 element의 클래스에 seized가 있다면 한 줄이 모두 블록으로 찬 것이므로 이를 확인
       child.children[0].childNodes.forEach((li) => {
-        const seizedBlock = li.classList.contains("seized");
-        if (!seizedBlock) {
+        const isSeized = li.classList.contains("seized");
+        if (!isSeized) {
           matched = false;
         }
       });
       // 해당 라인을 삭제하고 점수를 추가 한다
-      removeLine(matched, child);
+      if (!matched) {
+        return;
+      }
+
+      removeLine(child);
     });
-    generateNewBlock();
+    generateNewBlock(this.nextBlock);
   };
 
-  const removeLine = (matched, child) => {
-    if (!matched) {
-      return;
-    }
-
+  const removeLine = (child) => {
     child.remove();
     // 한 줄을 삭제하고 상단에 한 줄을 추가해주기 위해 prependNewLine()을 호출
-    prependNewLine();
+    prependNewLine(playground, GAME_COLS);
     addScore(this.point);
   };
 
@@ -137,7 +148,7 @@ function Tetris() {
   };
 
   // 새로운 블록을 생성하는 함수
-  const generateNewBlock = () => {
+  const generateNewBlock = (type) => {
     clearInterval(this.downInterval);
 
     // 블록이 duration에 한번 아래로 한칸 이동
@@ -145,19 +156,45 @@ function Tetris() {
       moveBlock("top", 1);
     }, this.duration);
 
-    // 난수를 생성하여 랜덤으로 블록을 선택
-    const blockTypes = Object.keys(BLOCKS);
-    const randomIndex = Math.floor(Math.random() * blockTypes.length);
-
-    // movingItem에 해당 블록과 초기값을 저장
-    const defaultValues = [blockTypes[randomIndex], 0, 0, 3];
-
-    Object.keys(this.movingItem).forEach((key, i) => {
-      this.movingItem[key] = defaultValues[i];
-    });
+    this.movingItem.type = type;
+    this.movingItem.direction = 0;
+    this.movingItem.top = 0;
+    this.movingItem.left = 3;
 
     this.tempMovingItem = { ...this.movingItem };
+
     renderBlocks();
+    showNextBlocks();
+  };
+
+  // 다음에 나올 블록을 보여주는 함수
+  const showNextBlocks = () => {
+    // 다음 블록을 그리기 전에 이전의 블록을 제거
+    clearNextBlockGround();
+
+    const type = selectBlock();
+    const direction = 0;
+
+    BLOCKS[type][direction].forEach((block) => {
+      let [x, y] = [block[0] + 1, block[1] + 1];
+      const target = nextBlockGround.childNodes[y].children[0].childNodes[x];
+      target.classList.add(type, "next-block");
+    });
+
+    this.nextBlock = type;
+  };
+
+  const clearNextBlockGround = () => {
+    nextBlockGround.innerHTML = "";
+
+    createNextBlockGround(nextBlockGround);
+  };
+
+  // 랜덤으로 블록을 정하는 함수
+  const selectBlock = () => {
+    const blockTypes = Object.keys(BLOCKS);
+    const randomIndex = Math.floor(Math.random() * blockTypes.length);
+    return blockTypes[randomIndex];
   };
 
   // 블록이 이동하려고 하는 격자가 없거나 격자에 이미 블록이 존재하는 지 확인

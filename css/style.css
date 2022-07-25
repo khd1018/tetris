@@ -13,6 +13,10 @@ body {
     overflow: hidden;
 }
 
+.container {
+    
+}
+
 .score {
     text-align: center;
     font-size: 36px;
@@ -22,8 +26,8 @@ body {
 
 .game-text {
     display: none;
-    justify-content: center;
-    align-items: center;
+    justify-content: space-around ;
+    align-items: center ;
     flex-direction: column;
     position: fixed;
     width: 100%;
@@ -43,24 +47,59 @@ body {
     cursor: pointer;
 }
 
-.playground > ul {
+.playground {
+    display: flex;
+    align-items: center;
+    justify-content : space-around;   
+
+}
+.nextblock {
+    margin-right: 500px ;
+}
+
+.nextblock > ul {
+    border : 1px solid  #333;
+    width: 125px;
+    margin: 0 auto;
+}
+
+.nextblock > ul > li {
+    width : 100%;
+    height: 25px;
+}
+
+.nextblock > ul > li > ul {
+    display: flex;
+}
+
+.nextblock > ul > li > ul > li {
+    width : 25px;
+    height : 25px;
+    outline : 1px solid #ccc
+}
+
+.wrapper {
+    margin-left: 350px ;
+}
+
+.playground > .wrapper > ul {
     border : 1px solid  #333;
     width: 250px;
     margin: 0 auto;
 }
 
-.playground > ul > li {
+.playground > .wrapper > ul > li {
     width: 100%;
     height: 25px;
 
 }
 
-.playground > ul > li > ul {
+.playground > .wrapper > ul > li > ul {
     display: flex;
 
 }
 
-.playground > ul > li > ul > li {
+.playground > .wrapper > ul > li > ul > li {
     width : 25px;
     height : 25px;
     outline: 1px solid #ccc;
