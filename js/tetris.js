@@ -10,6 +10,7 @@ function Tetris() {
   this.tempMovingItem; // 블록 랜더링 시 사용할 객체 변수
   this.point = 10;
   this.nextBlock;
+  this.AccelationInterval;
 
   // 오류발생시(블록이 격자를 넘어갈 시) 되돌릴 직전 블록 상태를 저장하는 객체
   this.movingItem = {
@@ -26,6 +27,9 @@ function Tetris() {
     createNextBlockGround(nextBlockGround);
     initEventListener();
     generateNewBlock(selectBlock());
+    this.AccelationInterval = setInterval(() => {
+      this.duration -= 100;
+    }, 60000);
   };
 
   const createPlayGround = (playground) => {
@@ -150,6 +154,10 @@ function Tetris() {
   // 새로운 블록을 생성하는 함수
   const generateNewBlock = (type) => {
     clearInterval(this.downInterval);
+
+    if (this.duration === 200) {
+      clearInterval(this.AccelationInterval);
+    }
 
     // 블록이 duration에 한번 아래로 한칸 이동
     this.downInterval = setInterval(() => {
