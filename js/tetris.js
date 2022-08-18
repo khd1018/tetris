@@ -1,6 +1,7 @@
 import BLOCKS from "./blocks.js";
 import { playground, gameoverText, scoreDisplay, restartButton, nextBlockGround } from "./dom.js";
 import { GAME_ROWS, GAME_COLS, NEXT_BLOCK_ROWS, NEXT_BLOCK_COLS } from "./setting.js";
+import store from "./store.js";
 
 //variables
 function Tetris() {
@@ -11,6 +12,8 @@ function Tetris() {
   this.point = 10;
   this.nextBlock;
   this.AccelationInterval;
+  this.userName;
+  this.scores;
 
   // 오류발생시(블록이 격자를 넘어갈 시) 되돌릴 직전 블록 상태를 저장하는 객체
   this.movingItem = {
@@ -23,13 +26,32 @@ function Tetris() {
   // 게임을 시작하면 테트리스 격자를 그리고, 블록을 생성한다
 
   this.init = () => {
+    this.duration = 500;
+    const scores = store.getLocalStorage();
+
+    if (scores) {
+      this.scores = scores;
+    } else {
+      this.scores = [0, 0, 0];
+    }
+
+    restartButton.removeEventListener("click", resetGame);
+
     createPlayGround(playground);
     createNextBlockGround(nextBlockGround);
+    showRank();
     initEventListener();
     generateNewBlock(selectBlock());
+
     this.AccelationInterval = setInterval(() => {
       this.duration -= 100;
     }, 60000);
+  };
+
+  const showRank = () => {
+    this.scores.sort((a, b) => b - a);
+
+    document.querySelector(".rank").innerText = `1등:  ${this.scores[0]} \n 2등:  ${this.scores[1]} \n 3등:  ${this.scores[2]}`;
   };
 
   const createPlayGround = (playground) => {
@@ -78,6 +100,9 @@ function Tetris() {
         if (moveType === "retry") {
           clearInterval(this.downInterval);
           showGameoverText();
+          this.scores.push(this.score);
+          store.setLocalStorage(this.scores);
+          document.removeEventListener("keydown", selectMove);
           return true;
         }
         setTimeout(() => {
@@ -98,6 +123,7 @@ function Tetris() {
   // 게임오버 시 보여줄 화면을 띄우는 함수
   const showGameoverText = () => {
     gameoverText.style.display = "flex";
+    document.getElementById("final").innerText = `최종스코어 \n ${this.score}점`;
   };
 
   // 블록이 더이상 내려갈 수 없는 위치에 블록을 고정하는 함수
@@ -187,6 +213,7 @@ function Tetris() {
       let [x, y] = [block[0] + 1, block[1] + 1];
       const target = nextBlockGround.childNodes[y].children[0].childNodes[x];
       target.classList.add(type, "next-block");
+      target.style.outline = "1px solid #ccc";
     });
 
     this.nextBlock = type;
@@ -232,33 +259,44 @@ function Tetris() {
   };
 
   //event handling
+  const selectMove = (e) => {
+    switch (e.key) {
+      case "ArrowDown":
+        moveBlock("top", 1);
+        break;
+      case "ArrowRight":
+        moveBlock("left", 1);
+        break;
+      case "ArrowUp":
+        changeBlocks();
+        break;
+      case "ArrowLeft":
+        moveBlock("left", -1);
+        break;
+      case " ":
+        dropBlock();
+        break;
+      default:
+        break;
+    }
+  };
+
+  const resetGame = () => {
+    clearInterval(this.AccelationInterval);
+    this.score = 0;
+    scoreDisplay.innerText = this.score;
+    gameoverText.style.display = "none";
+    playground.innerHTML = "";
+    this.scores.length = 0;
+    this.init();
+  };
 
   const initEventListener = () => {
-    document.addEventListener("keydown", (e) => {
-      switch (e.key) {
-        case "ArrowDown":
-          moveBlock("top", 1);
-          break;
-        case "ArrowRight":
-          moveBlock("left", 1);
-          break;
-        case "ArrowUp":
-          changeBlocks();
-          break;
-        case "ArrowLeft":
-          moveBlock("left", -1);
-          break;
-        case " ":
-          dropBlock();
-          break;
-        default:
-          break;
-      }
-    });
+    document.addEventListener("keydown", selectMove);
 
     // 재시작버튼 누르면 새로고침하여 리소스 다시 불러오게 한다.
     // 같은 eventListener가 event loop에 중복으로 있는 것을 방지하기 위해서 새로고침을 해줌.
-    restartButton.addEventListener("click", () => location.reload());
+    restartButton.addEventListener("click", resetGame);
   };
 }
 
